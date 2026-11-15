@@ -246,10 +246,12 @@ COPY --from=build --chown=maus:maus /src/skills ./skills
 RUN printf '#!/bin/sh\nexec node /app/dist-server/openmausbot.js "$@"\n' > /usr/local/bin/openmausbot && chmod 0755 /usr/local/bin/openmausbot
 ENV HOME=/data \
     OMB_CLI_PREFIX="docker compose exec omb openmausbot"
-USER maus
+# Starts as root only to hand a mounted volume (root-owned on Railway) to
+# `maus`, then drops to `maus` before running the server, so bots never run as root.
+USER root
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD curl -sf http://127.0.0.1:8799/api/health | grep -q openmausbot || exit 1
 # The launcher runs dist-server/index.js and starts it again when it asks to
 # (a copied workspace committing, server/restart.ts), so the container, and a
 # Caddy sharing its network, stays up through that restart.
-CMD ["node", "dist-server/server-launcher.js"]
+CMD ["sh", "-c", "chown maus:maus /data 2>/dev/null; exec setpriv --reuid=maus --regid=maus --init-groups node dist-server/server-launcher.js"]
