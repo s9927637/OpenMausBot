@@ -254,4 +254,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 # The launcher runs dist-server/index.js and starts it again when it asks to
 # (a copied workspace committing, server/restart.ts), so the container, and a
 # Caddy sharing its network, stays up through that restart.
-CMD ["sh", "-c", "chown maus:maus /data 2>/dev/null; exec setpriv --reuid=maus --regid=maus --init-groups node dist-server/server-launcher.js"]
+CMD ["sh", "-c", "chown -R maus:maus /data 2>/dev/null; exec setpriv --reuid=maus --regid=maus --init-groups node dist-server/server-launcher.js"]
